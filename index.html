@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevAcademy | Curso Completo de HTML e CSS</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .code-font { font-family: 'Fira Code', monospace; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #818cf8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Header Navigation -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="app.navigateToHome()">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-md">
+                    <i class="fa-solid fa-graduation-cap text-lg"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-brand-700 to-indigo-600 bg-clip-text text-transparent">DevAcademy</span>
+                    <span class="text-xs block text-slate-500 font-medium">HTML & CSS Profissional</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="hidden md:flex items-center space-x-2 bg-slate-100 px-3 py-1.5 rounded-full text-sm">
+                    <i class="fa-solid fa-trophy text-amber-500"></i>
+                    <span class="font-medium text-slate-700">Progresso Geral: <strong id="global-progress">0</strong>%</span>
+                </div>
+                <button onclick="app.resetProgress()" class="text-xs text-slate-500 hover:text-red-600 transition-colors px-2 py-1 rounded border border-slate-200 hover:border-red-300">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> Reiniciar
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main id="main-container" class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Views will be dynamically injected here -->
+    </main>
+
+    <!-- Custom Modal for Notifications / Feedback -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl transform transition-all">
+            <div id="modal-icon" class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl mb-4 mx-auto">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h3 id="modal-title" class="text-lg font-bold text-slate-900 text-center mb-2">Título do Modal</h3>
+            <p id="modal-message" class="text-slate-600 text-center text-sm mb-6">Mensagem descritiva aqui.</p>
+            <div class="flex justify-center">
+                <button onclick="app.closeModal()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-medium py-2.5 px-4 rounded-xl transition-colors shadow-sm">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center text-sm text-slate-500">
+            <p>DevAcademy &copy; 2026. Curso interativo completo de HTML e CSS para iniciantes e avançados.</p>
+        </div>
+    </footer>
+
+    <!-- Application Logic & Course Database -->
+    <script>
+        // Option Prefix Letters for clear identification
+        const optionLabels = ['A', 'B', 'C', 'D', 'E'];
+
+        // Helper function to sanitize text content so tags like <h1>, <textarea>, <title>, etc. don't break innerHTML rendering
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Course Database containing 3 levels, modules, lessons, exercises, capstone projects
+        const courseData = {
+            levels: [
+                {
+                    id: 'iniciante',
+                    title: 'Nível Iniciante',
+                    subtitle: 'Construa suas primeiras páginas web do zero absoluta.',
+                    description: 'Aprenda a estrutura dos documentos web, tags fundamentais, textos, imagens, links, listas e a introdução completa ao estilo com CSS.',
+                    icon: 'fa-seedling',
+                    color: 'emerald',
+                    modules: [
+                        {
+                            id: 'mod-1-1',
+                            title: 'Módulo 1: Fundamentos do HTML',
+                            description: 'Entenda o que é a web, como o navegador lê o código e a estrutura essencial de um documento HTML.',
+                            lessons: [
+                                {
+                                    id: 'les-1-1-1',
+                                    title: '1. O que é HTML e Estrutura Básica',
+                                    objectives: ['Compreender o papel do HTML na web.', 'Escrever o esqueleto básico de uma página HTML.', 'Conhecer tags, elementos e a tag <!DOCTYPE html>.'],
+                                    theory: `
+                                        <p class="mb-4">O <strong>HTML</strong> (<em>HyperText Markup Language</em> ou Linguagem de Marcação de Hipertexto) não é uma linguagem de programação, mas sim uma <strong>linguagem de marcação</strong>. Ela diz ao navegador como estruturar o conteúdo da sua página.</p>
+                                        <h4 class="font-bold text-slate-900 mt-4 mb-2">A Estrutura Básica</h4>
+                                        <p class="mb-2">Todo documento HTML moderno começa com uma declaração de tipo e a árvore de elementos:</p>
+                                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl code-font text-sm overflow-x-auto mb-4"><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="pt-BR"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Meu Primeiro Site&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Olá, Mundo!&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                                        <ul class="list-disc pl-5 space-y-2 text-slate-700">
+                                            <li><code>&lt;!DOCTYPE html&gt;</code>: Informa ao navegador que este é um documento HTML5 atual.</li>
+                                            <li><code>&lt;html&gt;</code>: O elemento raiz que envolve todo o conteúdo.</li>
+                                            <li><code>&lt;head&gt;</code>: Contém metadados (como codificação de caracteres e título da aba).</li>
+                                            <li><code>&lt;body&gt;</code>: Onde fica todo o conteúdo visível para o usuário.</li>
+                                        </ul>
+                                    `,
+                                    codeExample: '<!DOCTYPE html>\n<html lang="pt-BR">\n<head>\n    <meta charset="UTF-8">\n    <title>Exemplo</title>\n</head>\n<body>\n    <h1>Bem-vindo ao HTML!</h1>\n    <p>Este é o meu parágrafo inicial.</p>\n</body>\n</html>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-1-1-1',
+                                            question: 'Qual é a tag correta utilizada para definir o título principal (o maior título) de uma página web?',
+                                            options: ['<head>', '<h1>', '<title>', '<header>'],
+                                            correct: 1,
+                                            hint: 'Pense em "Heading 1".',
+                                            explanation: 'A tag <h1> representa o cabeçalho de nível 1, sendo o título mais importante da página.'
+                                        },
+                                        {
+                                            id: 'ex-1-1-2',
+                                            question: 'Onde devemos colocar o conteúdo visível de um site, como textos e imagens?',
+                                            options: ['Dentro da tag <head>', 'Dentro da tag <body>', 'Dentro da tag <!DOCTYPE html>', 'Dentro da tag <meta>'],
+                                            correct: 1,
+                                            hint: 'O nome da tag vem de "corpo" em inglês.',
+                                            explanation: 'A tag <body> abriga todo o conteúdo exibido na tela do navegador.'
+                                        }
+                                    ],
+                                    review: 'O HTML estrutura o conteúdo usando tags. O esqueleto essencial inclui <!DOCTYPE html>, <html>, <head> e <body>.'
+                                },
+                                {
+                                    id: 'les-1-1-2',
+                                    title: '2. Títulos, Parágrafos e Formatação de Texto',
+                                    objectives: ['Utilizar hierarquia de títulos de h1 até h6.', 'Criar parágrafos com a tag p.', 'Aplicar ênfase visual com strong e em.'],
+                                    theory: `
+                                        <p class="mb-4">Para organizar textos na web, usamos diferentes tags que dão significado semântico e visual ao conteúdo.</p>
+                                        <h4 class="font-bold text-slate-900 mt-4 mb-2">Hierarquia de Títulos (H1 a H6)</h4>
+                                        <p class="mb-2">O HTML oferece 6 níveis de títulos, do <code>&lt;h1&gt;</code> (mais importante) até o <code>&lt;h6&gt;</code> (menos importante).</p>
+                                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl code-font text-sm overflow-x-auto mb-4"><code>&lt;h1&gt;Título Principal&lt;/h1&gt;
+&lt;h2&gt;Subtítulo da Seção&lt;/h2&gt;
+&lt;p&gt;Este é um parágrafo normal de texto com &lt;strong&gt;texto em destaque negrito&lt;/strong&gt; e &lt;em&gt;texto em itálico com ênfase&lt;/em&gt;.&lt;/p&gt;</code></pre>
+                                    `,
+                                    codeExample: '<h1>Culinária Caseira</h1>\n<h2>Receitas fáceis para o dia a dia</h2>\n<p>Aprenda a fazer pratos <strong>deliciosos</strong> em poucos minutos com <em>ingredientes simples</em>.</p>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-1-1-3',
+                                            question: 'Qual tag você usaria para deixar um trecho de texto em negrito com importância semântica?',
+                                            options: ['<bold>', '<strong>', '<b-text>', '<italic>'],
+                                            correct: 1,
+                                            hint: 'É uma palavra em inglês que significa forte.',
+                                            explanation: 'A tag <strong> define um texto com forte importância, sendo renderizada em negrito por padrão.'
+                                        },
+                                        {
+                                            id: 'ex-1-1-4',
+                                            question: 'Quantos níveis de títulos existem no padrão HTML, do maior para o menor?',
+                                            options: ['3 (h1 a h3)', '5 (h1 a h5)', '6 (h1 a h6)', 'Ilimitados'],
+                                            correct: 2,
+                                            hint: 'Vai de 1 até 6.',
+                                            explanation: 'Existem exatamente seis níveis de títulos em HTML: <h1>, <h2>, <h3>, <h4>, <h5> e <h6>.'
+                                        }
+                                    ],
+                                    review: 'Use <h1> a <h6> para hierarquia de títulos, <p> para parágrafos, <strong> para forte ênfase e <em> para itálico.'
+                                },
+                                {
+                                    id: 'les-1-1-3',
+                                    title: '3. Links e Navegação entre Páginas',
+                                    objectives: ['Criar links com a tag a e o atributo href.', 'Abrir links em nova aba com target="_blank".'],
+                                    theory: `
+                                        <p class="mb-4">O "Hipertexto" no HTML significa que as páginas podem se conectar umas às outras através de links (âncoras).</p>
+                                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl code-font text-sm overflow-x-auto mb-4"><code>&lt;a href="https://www.google.com" target="_blank"&gt;Acessar o Google&lt;/a&gt;</code></pre>
+                                        <ul class="list-disc pl-5 space-y-2 text-slate-700">
+                                            <li><code>href</code>: O atributo que define o endereço de destino (URL ou arquivo local).</li>
+                                            <li><code>target="_blank"</code>: Faz com que o link abra em uma nova aba do navegador.</li>
+                                        </ul>
+                                    `,
+                                    codeExample: '<p>Visite nosso <a href="https://developer.mozilla.org" target="_blank">portal de estudos MDN</a> para mais referências.</p>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-1-1-5',
+                                            question: 'Qual atributo da tag <a> é obrigatório para indicar o endereço de destino de um link?',
+                                            options: ['src', 'link', 'href', 'url'],
+                                            correct: 2,
+                                            hint: 'Hypertext REFerence.',
+                                            explanation: 'O atributo href (Hypertext Reference) especifica a URL de destino do link.'
+                                        },
+                                        {
+                                            id: 'ex-1-1-6',
+                                            question: 'Como você faz para que um link abra automaticamente em uma nova aba do navegador?',
+                                            options: ['new-tab="true"', 'target="_blank"', 'window="open"', 'blank="yes"'],
+                                            correct: 1,
+                                            hint: 'Usa o atributo target.',
+                                            explanation: 'O atributo target="_blank" instrui o navegador a abrir o link em uma nova guia ou janela.'
+                                        }
+                                    ],
+                                    review: 'A tag <a> combinada com o atributo href cria links navegáveis na web.'
+                                }
+                            ]
+                        },
+                        {
+                            id: 'mod-1-2',
+                            title: 'Módulo 2: Conteúdo Visual e Semântica',
+                            description: 'Aprenda a inserir imagens, estruturar listas ordenadas/não ordenadas e usar tags semânticas.',
+                            lessons: [
+                                {
+                                    id: 'les-1-2-1',
+                                    title: '1. Inserindo Imagens e Caminhos',
+                                    objectives: ['Adicionar imagens com a tag img.', 'Utilizar os atributos src e alt corretamente.'],
+                                    theory: `
+                                        <p class="mb-4">Para exibir imagens na página, utilizamos a tag <code>&lt;img&gt;</code>. Ela é uma tag vazia (não possui tag de fechamento).</p>
+                                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl code-font text-sm overflow-x-auto mb-4"><code>&lt;img src="https://placehold.co/400x250/6366f1/ffffff?text=Exemplo" alt="Descrição da imagem para acessibilidade"&gt;</code></pre>
+                                        <p class="mb-2"><strong>Dica importante:</strong> O atributo <code>alt</code> (texto alternativo) é obrigatório para acessibilidade, sendo lido por leitores de tela para deficientes visuais caso a imagem não carregue.</p>
+                                    `,
+                                    codeExample: '<div style="text-align:center;">\n    <h2>Nossa Natureza</h2>\n    <img src="https://placehold.co/500x300/4f46e5/ffffff?text=Paisagem" alt="Paisagem de montanhas ao pôr do sol">\n</div>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-1-2-1',
+                                            question: 'Qual atributo da tag <img> especifica o caminho ou URL da imagem a ser exibida?',
+                                            options: ['href', 'link', 'src', 'source'],
+                                            correct: 2,
+                                            hint: 'Abreviação de "source" (fonte).',
+                                            explanation: 'O atributo src define a fonte da imagem (caminho do arquivo ou link URL).'
+                                        },
+                                        {
+                                            id: 'ex-1-2-2',
+                                            question: 'Para que serve o atributo "alt" em uma imagem?',
+                                            options: ['Mudar a altura da imagem', 'Fornecer uma descrição textual alternativa para leitores de tela', 'Alinhar a imagem ao centro', 'Definir a borda'],
+                                            correct: 1,
+                                            hint: 'Importante para inclusão e acessibilidade.',
+                                            explanation: 'O atributo alt descreve a imagem para acessibilidade e casos em que a mídia falha ao carregar.'
+                                        }
+                                    ],
+                                    review: 'A tag <img> usa src para o caminho e alt para a descrição textual acessível.'
+                                },
+                                {
+                                    id: 'les-1-2-2',
+                                    title: '2. Listas Ordenadas e Não Ordenadas',
+                                    objectives: ['Criar listas com marcadores (ul/li).', 'Criar listas enumeradas (ol/li).'],
+                                    theory: `
+                                        <p class="mb-4">Listas organizam itens de forma clara. Temos dois tipos principais:</p>
+                                        <ul class="list-disc pl-5 space-y-2 mb-4 text-slate-700">
+                                            <li><strong>Listas não ordenadas (<code>&lt;ul&gt;</code>)</strong>: Usam marcadores em bullet points.</li>
+                                            <li><strong>Listas ordenadas (<code>&lt;ol&gt;</code>)</strong>: Usam números sequenciais.</li>
+                                        </ul>
+                                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl code-font text-sm overflow-x-auto mb-4"><code>&lt;ul&gt;
+    &lt;li&gt;Café&lt;/li&gt;
+    &lt;li&gt;Leite&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ol&gt;
+    &lt;li&gt;Primeiro passo&lt;/li&gt;
+    &lt;li&gt;Segundo passo&lt;/li&gt;
+&lt;/ol&gt;</code></pre>
+                                    `,
+                                    codeExample: '<h3>Ingredientes do Bolo</h3>\n<ul>\n    <li>Farinha de Trigo</li>\n    <li>Ovos</li>\n    <li>Açúcar</li>\n</ul>\n\n<h3>Modo de Preparo</h3>\n<ol>\n    <li>Misture os ingredientes secos</li>\n    <li>Adicione os ovos e bata</li>\n    <li>Leve ao forno por 40 minutos</li>\n</ol>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-1-2-3',
+                                            question: 'Qual tag representa um item individual dentro de uma lista (seja ul ou ol)?',
+                                            options: ['<item>', '<li>', '<list>', '<ul-item>'],
+                                            correct: 1,
+                                            hint: 'ListItem.',
+                                            explanation: 'A tag <li> (List Item) é utilizada para envolver cada elemento individual de uma lista.'
+                                        },
+                                        {
+                                            id: 'ex-1-2-4',
+                                            question: 'Qual elemento HTML você deve utilizar para criar uma lista numerada (com 1, 2, 3...)?',
+                                            options: ['<ul>', '<ol>', '<list-num>', '<nl>'],
+                                            correct: 1,
+                                            hint: 'Ordered List.',
+                                            explanation: 'A tag <ol> cria uma lista ordenada (Ordered List).'
+                                        }
+                                    ],
+                                    review: 'Use <ul> para listas com marcadores e <ol> para listas numeradas. Cada item é representado por <li>.'
+                                },
+                                {
+                                    id: 'les-1-2-3',
+                                    title: '3. HTML Semântico (Header, Nav, Main, Footer)',
+                                    objectives: ['Entender a importância do HTML semântico.', 'Utilizar tags como header, nav, main, section e footer.'],
+                                    theory: `
+                                        <p class="mb-4">O HTML semântico significa usar tags que dão significado real à estrutura do site, em vez de usar apenas caixas genéricas (<code>&lt;div&gt;</code>).</p>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                            <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                                                <h5 class="font-bold text-indigo-900 mb-1">&lt;header&gt; e &lt;nav&gt;</h5>
+                                                <p class="text-sm text-indigo-700">Cabeçalho da página e barra de navegação principal.</p>
+                                            </div>
+                                            <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                                                <h5 class="font-bold text-indigo-900 mb-1">&lt;main&gt; e &lt;footer&gt;</h5>
+                                                <p class="text-sm text-indigo-700">Conteúdo central da página e rodapé institucional.</p>
+                                            </div>
+                                        </div>
+                                    `,
+                                    codeExample: '<header>\n    <h1>Meu Blog</h1>\n    <nav>\n        <a href="#">Início</a> | <a href="#">Sobre</a>\n    </nav>\n</header>\n<main>\n    <section>\n        <h2>Artigo Recente</h2>\n        <p>Conteúdo do artigo aqui...</p>\n    </section>\n</main>\n<footer>\n    <p>&copy; 2026 DevAcademy</p>\n</footer>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-1-2-5',
+                                            question: 'Qual tag semântica é ideal para envolver o conteúdo principal e único de uma página web?',
+                                            options: ['<content>', '<main>', '<primary>', '<body>'],
+                                            correct: 1,
+                                            hint: 'Significa "principal" em inglês.',
+                                            explanation: 'A tag <main> especifica o conteúdo principal do corpo de um documento.'
+                                        },
+                                        {
+                                            id: 'ex-1-2-6',
+                                            question: 'Para que serve a tag <nav>?',
+                                            options: ['Para criar navegação por abas em formulários', 'Para conter links de navegação principais do site', 'Para navegar entre pastas do computador', 'Para criar um menu flutuante de imagens'],
+                                            correct: 1,
+                                            hint: 'Navegação / Links.',
+                                            explanation: 'A tag <nav> define uma seção de links de navegação.'
+                                        }
+                                    ],
+                                    review: 'O HTML semântico melhora o SEO, a acessibilidade e a legibilidade do código com tags como <header>, <nav>, <main>, <section> e <footer>.'
+                                }
+                            ]
+                        },
+                        {
+                            id: 'mod-1-3',
+                            title: 'Módulo 3: Introdução ao CSS',
+                            description: 'Descubra como estilizar páginas web usando seletores, cores, tipografia e o modelo de caixa.',
+                            lessons: [
+                                {
+                                    id: 'les-1-3-1',
+                                    title: '1. O que é CSS e Sintaxe Básica',
+                                    objectives: ['Compreender o papel do CSS (Cascading Style Sheets).', 'Escrever regras CSS usando seletores, propriedades e valores.'],
+                                    theory: `
+                                        <p class="mb-4">Enquanto o HTML estrutura o conteúdo, o <strong>CSS</strong> cuida da aparência, cores, fontes, layouts e animações.</p>
+                                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl code-font text-sm overflow-x-auto mb-4"><code>h1 {
+    color: #4f46e5;
+    font-size: 32px;
+    text-align: center;
+}</code></pre>
+                                        <ul class="list-disc pl-5 space-y-2 text-slate-700">
+                                            <li><strong>Seletor (<code>h1</code>)</strong>: Escolhe qual elemento HTML será estilizado.</li>
+                                            <li><strong>Propriedade (<code>color</code>)</strong>: O aspecto que você deseja modificar.</li>
+                                            <li><strong>Valor (<code>#4f46e5</code>)</strong>: A configuração aplicada à propriedade.</li>
+                                        </ul>
+                                    `,
+                                    codeExample: '<style>\n    p {\n        color: #334155;\n        font-size: 18px;\n        line-height: 1.6;\n    }\n</style>\n<p>Este parágrafo está estilizado com CSS personalizado!</p>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-1-3-1',
+                                            question: 'Na regra CSS <code>p { color: red; }</code>, o que é o trecho "color"?',
+                                            options: ['O seletor', 'A propriedade', 'O valor', 'O elemento HTML'],
+                                            correct: 1,
+                                            hint: 'Define qual característica estética será alterada.',
+                                            explanation: '"color" é a propriedade CSS que define a cor do texto.'
+                                        },
+                                        {
+                                            id: 'ex-1-3-2',
+                                            question: 'Como você aplica CSS interno diretamente em um documento HTML?',
+                                            options: ['Dentro da tag <style>', 'Dentro da tag <css>', 'Dentro da tag <script>', 'Através do atributo html-style'],
+                                            correct: 0,
+                                            hint: 'Estilo em inglês.',
+                                            explanation: 'A tag <style> dentro do <head> permite adicionar regras CSS internas na página.'
+                                        }
+                                    ],
+                                    review: 'O CSS utiliza seletores, propriedades e valores para transformar o visual dos elementos HTML.'
+                                },
+                                {
+                                    id: 'les-1-3-2',
+                                    title: '2. Cores, Fundos e Unidades de Medida',
+                                    objectives: ['Utilizar cores em nomes, HEX e RGB.', 'Definir tamanhos usando pixels (px) e porcentagens (%).'],
+                                    theory: `
+                                        <p class="mb-4">As cores dão vida ao design. Podemos definir cores em CSS de várias formas:</p>
+                                        <ul class="list-disc pl-5 space-y-2 mb-4 text-slate-700">
+                                            <li><strong>Nomes</strong>: <code>red</code>, <code>blue</code>, <code>white</code>.</li>
+                                            <li><strong>Hexadecimal</strong>: <code>#4f46e5</code> (código de 6 caracteres).</li>
+                                            <li><strong>RGB</strong>: <code>rgb(79, 70, 229)</code> (Red, Green, Blue).</li>
+                                        </ul>
+                                    `,
+                                    codeExample: '<style>\n    .card {\n        background-color: #e0e7ff;\n        color: #312e81;\n        padding: 20px;\n        border-radius: 12px;\n    }\n</style>\n<div class="card">\n    <h3>Cartão com Cores e Fundo</h3>\n    <p>Este bloco possui fundo personalizado.</p>\n</div>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-1-3-3',
+                                            question: 'Qual propriedade CSS é utilizada para alterar a cor de fundo de um elemento?',
+                                            options: ['color', 'background-color', 'bg-color', 'fill-background'],
+                                            correct: 1,
+                                            hint: 'Cor de fundo em inglês.',
+                                            explanation: 'A propriedade background-color define a cor de fundo de um elemento.'
+                                        },
+                                        {
+                                            id: 'ex-1-3-4',
+                                            question: 'O que significa a unidade de medida "px" muito usada em CSS?',
+                                            options: ['Porcentagem', 'Pixel', 'Pixel-X', 'Ponto x Ponto'],
+                                            correct: 1,
+                                            hint: 'Unidade padrão de pontos na tela.',
+                                            explanation: 'px significa pixel, uma unidade de medida absoluta na tela.'
+                                        }
+                                    ],
+                                    review: 'Cores podem ser HEX ou RGB, e unidades como px e % definem dimensões e espaçamentos.'
+                                },
+                                {
+                                    id: 'les-1-3-3',
+                                    title: '3. Tipografia e O Modelo de Caixa (Box Model)',
+                                    objectives: ['Estilizar fontes com font-family, font-size e font-weight.', 'Entender margens (margin), bordas (border) e preenchimento (padding).'],
+                                    theory: `
+                                        <p class="mb-4">Cada elemento em HTML é considerado uma caixa retangular. O <strong>Modelo de Caixa (Box Model)</strong> é composto por:</p>
+                                        <ul class="list-disc pl-5 space-y-2 mb-4 text-slate-700">
+                                            <li><strong>Content</strong>: O texto ou imagem real.</li>
+                                            <li><strong>Padding</strong>: O espaçamento interno (entre o conteúdo e a borda).</li>
+                                            <li><strong>Border</strong>: A borda ao redor do padding.</li>
+                                            <li><strong>Margin</strong>: O espaçamento externo (afasta o elemento de outros).</li>
+                                        </ul>
+                                    `,
+                                    codeExample: '<style>\n    .caixa-box {\n        background-color: #f1f5f9;\n        border: 2px solid #6366f1;\n        padding: 20px;\n        margin: 15px;\n        border-radius: 8px;\n    }\n</style>\n<div class="caixa-box">\n    <h4>Exemplo do Box Model</h4>\n    <p>Observe as bordas e os espaçamentos internos e externos.</p>\n</div>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-1-3-5',
+                                            question: 'Qual propriedade CSS define o espaçamento <strong>interno</strong> entre o conteúdo e a borda de um elemento?',
+                                            options: ['margin', 'padding', 'spacing', 'border-space'],
+                                            correct: 1,
+                                            hint: 'Espaçamento interno.',
+                                            explanation: 'O padding cria um respiro interno na caixa do elemento.'
+                                        },
+                                        {
+                                            id: 'ex-1-3-6',
+                                            question: 'Qual propriedade CSS você usaria para alterar a grossura ou peso da fonte (negrito)?',
+                                            options: ['font-style', 'font-weight', 'text-bold', 'font-thickness'],
+                                            correct: 1,
+                                            hint: 'Peso da fonte em inglês.',
+                                            explanation: 'font-weight define se a fonte é normal, negrita (bold), etc.'
+                                        }
+                                    ],
+                                    review: 'O Box Model envolve Content, Padding, Border e Margin. A tipografia controla fontes e pesos.'
+                                }
+                            ]
+                        }
+                    ],
+                    capstone: {
+                        title: 'Projeto Prático Nível 1: Página de Perfil Pessoal',
+                        description: 'Chegou a hora de aplicar tudo o que você aprendeu no nível Iniciante! Crie uma página web completa apresentando seu perfil, contendo cabeçalho semântico, imagem, biografia formatada, lista de hobbies e links estilizados com CSS puro.',
+                        initialHtml: '<header>\n    <h1>Maria Silva</h1>\n    <p>Desenvolvedora Web Iniciante</p>\n</header>\n<main>\n    <img src="https://placehold.co/150x150/6366f1/ffffff?text=Foto" alt="Foto de perfil">\n    <h2>Sobre Mim</h2>\n    <p>Adoro tecnologia, design e criar coisas novas para a web.</p>\n    <h2>Meus Hobbies</h2>\n    <ul>\n        <li>Programação</li>\n        <li>Leitura</li>\n        <li>Música</li>\n    </ul>\n</main>\n<footer>\n    <a href="https://github.com" target="_blank">Meu GitHub</a>\n</footer>',
+                        initialCss: 'body {\n    font-family: Arial, sans-serif;\n    background-color: #f8fafc;\n    color: #1e293b;\n    text-align: center;\n    padding: 20px;\n}\nheader {\n    background-color: #4f46e5;\n    color: white;\n    padding: 30px;\n    border-radius: 12px;\n}\nimg {\n    border-radius: 50%;\n    margin: 20px 0;\n    border: 4px solid #4f46e5;\n}\nul {\n    list-style: none;\n    padding: 0;\n}\nli {\n    background: white;\n    margin: 5px auto;\n    max-width: 200px;\n    padding: 10px;\n    border-radius: 6px;\n    box-shadow: 0 2px 4px rgba(0,0,0,0.05);\n}\na {\n    color: #4f46e5;\n    text-decoration: none;\n    font-weight: bold;\n}'
+                    }
+                },
+                {
+                    id: 'intermediario',
+                    title: 'Nível Intermediário',
+                    subtitle: 'Domine layouts modernos com Flexbox, Grid e Responsividade.',
+                    description: 'Aprenda formulários interativos, acessibilidade básica, Flexbox, CSS Grid, media queries e pseudo-classes para criar sites profissionais adaptados a celulares e desktops.',
+                    icon: 'fa-layer-group',
+                    color: 'indigo',
+                    modules: [
+                        {
+                            id: 'mod-2-1',
+                            title: 'Módulo 1: Formulários e Acessibilidade',
+                            description: 'Crie inputs interativos, rótulos acessíveis e valide dados de formulários.',
+                            lessons: [
+                                {
+                                    id: 'les-2-1-1',
+                                    title: '1. Elementos de Formulário (Input, Label, Textarea)',
+                                    objectives: ['Criar formulários com a tag form.', 'Utilizar labels e inputs corretamente associados.'],
+                                    theory: `
+                                        <p class="mb-4">Formulários permitem que usuários enviem dados para o site (como cadastros, logins e mensagens).</p>
+                                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl code-font text-sm overflow-x-auto mb-4"><code>&lt;form&gt;
+    &lt;label for="nome"&gt;Nome Completo:&lt;/label&gt;
+    &lt;input type="text" id="nome" name="nome" placeholder="Digite seu nome"&gt;
+&lt;/form&gt;</code></pre>
+                                    `,
+                                    codeExample: '<form style="display:flex; flex-direction:column; gap:12px; max-width:300px;">\n    <label for="email"><strong>E-mail:</strong></label>\n    <input type="email" id="email" placeholder="seu@email.com" style="padding:8px; border:1px solid #cbd5e1; border-radius:6px;">\n    <button type="submit" style="background:#4f46e5; color:white; padding:10px; border:none; border-radius:6px; cursor:pointer;">Enviar</button>\n</form>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-2-1-1',
+                                            question: 'Qual atributo do elemento <label> deve corresponder ao ID de um input para associá-los corretamente?',
+                                            options: ['name', 'for', 'target', 'id-ref'],
+                                            correct: 1,
+                                            hint: 'Conecta o rótulo ao campo.',
+                                            explanation: 'O atributo for do label aponta para o id correspondente do input.'
+                                        },
+                                        {
+                                            id: 'ex-2-1-2',
+                                            question: 'Qual tag HTML é utilizada para criar caixas de texto com múltiplas linhas (comentários ou mensagens)?',
+                                            options: ['<input type="longtext">', '<textarea>', '<textbox>', '<textblock>'],
+                                            correct: 1,
+                                            hint: 'Área de texto.',
+                                            explanation: 'A tag <textarea> permite inserção de textos longos com várias linhas.'
+                                        }
+                                    ],
+                                    review: 'Formulários usam <form>, <label>, <input> e <textarea> para interação com o usuário.'
+                                },
+                                {
+                                    id: 'les-2-1-2',
+                                    title: '2. Tipos de Input e Validação',
+                                    objectives: ['Conhecer inputs de email, senha, número e data.', 'Utilizar atributos de validação como required e minlength.'],
+                                    theory: `
+                                        <p class="mb-4">O HTML5 traz tipos de input inteligentes que validam dados automaticamente.</p>
+                                        <ul class="list-disc pl-5 space-y-2 mb-4 text-slate-700">
+                                            <li><code>type="email"</code>: Valida formato de e-mail.</li>
+                                            <li><code>type="password"</code>: Oculta caracteres digitados.</li>
+                                            <li><code>required</code>: Impede envio se o campo estiver vazio.</li>
+                                        </ul>
+                                    `,
+                                    codeExample: '<form style="max-width:300px; display:flex; flex-direction:column; gap:10px;">\n    <input type="password" placeholder="Senha segura" required style="padding:8px; border:1px solid #cbd5e1; border-radius:6px;">\n    <input type="number" placeholder="Idade" min="18" max="100" style="padding:8px; border:1px solid #cbd5e1; border-radius:6px;">\n</form>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-2-1-3',
+                                            question: 'Qual atributo HTML impede que um formulário seja enviado se o campo obrigatório estiver em branco?',
+                                            options: ['mandatory', 'validate', 'required', 'lock'],
+                                            correct: 2,
+                                            hint: 'Significa "necessário" ou "exigido".',
+                                            explanation: 'O atributo required força o preenchimento antes do envio.'
+                                        },
+                                        {
+                                            id: 'ex-2-1-4',
+                                            question: 'Qual input type mascara automaticamente os caracteres digitados por bolinhas de segurança?',
+                                            options: ['type="secret"', 'type="password"', 'type="secure"', 'type="hidden"'],
+                                            correct: 1,
+                                            hint: 'Palavra em inglês para senha.',
+                                            explanation: 'type="password" oculta visualmente a senha digitada.'
+                                        }
+                                    ],
+                                    review: 'Tipos como email, password e number somados a required garantem validação nativa.'
+                                },
+                                {
+                                    id: 'les-2-1-3',
+                                    title: '3. Acessibilidade Básica em Formulários',
+                                    objectives: ['Garantir acessibilidade com ARIA e labels adequados.', 'Melhorar a navegação por teclado.'],
+                                    theory: `
+                                        <p class="mb-4">Acessibilidade (a11y) garante que pessoas com deficiência visual ou motora consigam usar sua aplicação sem barreiras.</p>
+                                        <p class="mb-2">Sempre utilize <code>&lt;label&gt;</code> explícitos e atributos como <code>aria-label</code> quando o rótulo visual não estiver presente.</p>
+                                    `,
+                                    codeExample: '<form style="max-width:300px;">\n    <label for="busca" class="sr-only">Pesquisar site</label>\n    <input type="search" id="busca" placeholder="Pesquisar..." aria-label="Pesquisar no site" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">\n</form>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-2-1-5',
+                                            question: 'Por que o uso correto de <label> em formulários é crucial para acessibilidade?',
+                                            options: ['Porque deixa o botão mais colorido', 'Porque leitores de tela anunciam o nome do campo para deficientes visuais', 'Porque acelera o carregamento da página', 'Porque obriga o uso de CSS'],
+                                            correct: 1,
+                                            hint: 'Ajuda quem usa leitores de tela.',
+                                            explanation: 'Leitores de tela associam o label ao input, permitindo que o usuário saiba o que digitar.'
+                                        },
+                                        {
+                                            id: 'ex-2-1-6',
+                                            question: 'Qual atributo ARIA pode fornecer um rótulo textual a um elemento que não possui texto visível?',
+                                            options: ['aria-text', 'aria-label', 'aria-description', 'alt-label'],
+                                            correct: 1,
+                                            hint: 'Rótulo acessível.',
+                                            explanation: 'aria-label define uma string descritiva acessível para leitores de tela.'
+                                        }
+                                    ],
+                                    review: 'Acessibilidade em formulários protege leitores de tela e garante navegação inclusiva.'
+                                }
+                            ]
+                        },
+                        {
+                            id: 'mod-2-2',
+                            title: 'Módulo 2: Layouts Modernos com Flexbox',
+                            description: 'Domine o Flexbox para alinhar e distribuir elementos em uma ou duas dimensões de forma flexível.',
+                            lessons: [
+                                {
+                                    id: 'les-2-2-1',
+                                    title: '1. Conceitos do Flexbox (Container e Itens)',
+                                    objectives: ['Transformar um elemento em container flexível com display: flex.', 'Entender eixo principal e eixo cruzado.'],
+                                    theory: `
+                                        <p class="mb-4">O <strong>Flexbox</strong> revolucionou o design web. Ao definir <code>display: flex</code> em um container pai, todos os seus filhos diretos tornam-se itens flexíveis.</p>
+                                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl code-font text-sm overflow-x-auto mb-4"><code>.container {
+    display: flex;
+    gap: 15px;
+}</code></pre>
+                                    `,
+                                    codeExample: '<div style="display: flex; gap: 10px; background: #e0e7ff; padding: 15px; border-radius: 8px;">\n    <div style="background: #4f46e5; color: white; padding: 15px; border-radius: 6px; flex: 1;">Item 1</div>\n    <div style="background: #4f46e5; color: white; padding: 15px; border-radius: 6px; flex: 1;">Item 2</div>\n    <div style="background: #4f46e5; color: white; padding: 15px; border-radius: 6px; flex: 1;">Item 3</div>\n</div>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-2-2-1',
+                                            question: 'Qual propriedade CSS ativa o modo Flexbox em um container?',
+                                            options: ['display: box', 'layout: flex', 'display: flex', 'flex-mode: true'],
+                                            correct: 2,
+                                            hint: 'Usa a propriedade display.',
+                                            explanation: 'display: flex transforma o elemento em um container flexível.'
+                                        },
+                                        {
+                                            id: 'ex-2-2-2',
+                                            question: 'Qual propriedade CSS define o espaçamento automático entre itens flexíveis sem precisar aplicar margens individuais?',
+                                            options: ['space', 'gap', 'margin-between', 'flex-spacing'],
+                                            correct: 1,
+                                            hint: 'Nome curto em inglês para intervalo/espaço.',
+                                            explanation: 'A propriedade gap define o espaçamento perfeito entre os elementos flex ou grid.'
+                                        }
+                                    ],
+                                    review: 'display: flex ativa o Flexbox e a propriedade gap espaça os itens facilmente.'
+                                },
+                                {
+                                    id: 'les-2-2-2',
+                                    title: '2. Alinhamento e Direção com Flexbox',
+                                    objectives: ['Controlar o alinhamento com justify-content e align-items.', 'Mudar a direção com flex-direction.'],
+                                    theory: `
+                                        <p class="mb-4">O Flexbox facilita alinhar itens no eixo horizontal e vertical:</p>
+                                        <ul class="list-disc pl-5 space-y-2 mb-4 text-slate-700">
+                                            <li><code>justify-content: center / space-between / flex-end</code>: Alinha no eixo principal.</li>
+                                            <li><code>align-items: center / flex-start</code>: Alinha no eixo cruzado (vertical).</li>
+                                            <li><code>flex-direction: column</code>: Empilha os itens verticalmente.</li>
+                                        </ul>
+                                    `,
+                                    codeExample: '<div style="display: flex; justify-content: space-between; align-items: center; background: #f1f5f9; padding: 15px; border-radius: 8px; height: 100px;">\n    <div style="background: #0ea5e9; color: white; padding: 10px;">Logo</div>\n    <div style="display: flex; gap: 15px;">\n        <span>Home</span>\n        <span>Sobre</span>\n        <span>Contato</span>\n    </div>\n</div>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-2-2-3',
+                                            question: 'Qual propriedade Flexbox alinha os itens horizontalmente (no eixo principal) distribuindo espaço igual entre eles?',
+                                            options: ['align-items: space-between', 'justify-content: space-between', 'flex-distribute: equal', 'align-content: middle'],
+                                            correct: 1,
+                                            hint: 'Justificar conteúdo.',
+                                            explanation: 'justify-content: space-between distribui os itens com espaço igual entre eles.'
+                                        },
+                                        {
+                                            id: 'ex-2-2-4',
+                                            question: 'Como você muda a direção do Flexbox para que os itens fiquem empilhados em coluna?',
+                                            options: ['flex-direction: column;', 'display: vertical;', 'flex-flow: vertical;', 'direction: stack;'],
+                                            correct: 0,
+                                            hint: 'Direção flexível em coluna.',
+                                            explanation: 'flex-direction: column organiza os itens de cima para baixo.'
+                                        }
+                                    ],
+                                    review: 'justify-content e align-items controlam o alinhamento total no Flexbox.'
+                                },
+                                {
+                                    id: 'les-2-2-3',
+                                    title: '3. Distribuindo Espaços e Quebras no Flexbox',
+                                    objectives: ['Utilizar flex-wrap para permitir quebras de linha.', 'Controlar o crescimento dos itens com flex-grow.'],
+                                    theory: `
+                                        <p class="mb-4">Por padrão, os itens flex tentam caber em uma única linha. Usando <code>flex-wrap: wrap</code>, eles quebram para a linha seguinte quando não há espaço.</p>
+                                    `,
+                                    codeExample: '<div style="display: flex; flex-wrap: wrap; gap: 10px; max-width: 250px;">\n    <div style="background: #6366f1; color: white; padding: 20px; flex: 1 1 100px; text-align:center;">Caixa 1</div>\n    <div style="background: #6366f1; color: white; padding: 20px; flex: 1 1 100px; text-align:center;">Caixa 2</div>\n    <div style="background: #6366f1; color: white; padding: 20px; flex: 1 1 100px; text-align:center;">Caixa 3</div>\n</div>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-2-2-5',
+                                            question: 'Qual propriedade permite que os itens flex quebrem para a linha de baixo quando o container for estreito?',
+                                            options: ['flex-break: true', 'flex-wrap: wrap', 'wrap-items: yes', 'overflow: wrap'],
+                                            correct: 1,
+                                            hint: 'Quebra flexível.',
+                                            explanation: 'flex-wrap: wrap permite que os itens ocupem múltiplas linhas.'
+                                        },
+                                        {
+                                            id: 'ex-2-2-6',
+                                            question: 'O que o atalho <code>flex: 1</code> faz em um item flexível?',
+                                            options: ['Dá largura fixa de 1 pixel', 'Faz o item crescer e ocupar o espaço disponível igualmente', 'Oculta o item', 'Alinha o item ao topo'],
+                                            correct: 1,
+                                            hint: 'Crescimento proporcional.',
+                                            explanation: 'flex: 1 faz com que o item cresça para preencher o espaço livre.'
+                                        }
+                                    ],
+                                    review: 'flex-wrap gerencia quebras de linha e flex controla proporções e tamanhos.'
+                                }
+                            ]
+                        },
+                        {
+                            id: 'mod-2-3',
+                            title: 'Módulo 3: Grid, Responsividade e Pseudo-classes',
+                            description: 'Construa layouts em grade complexos, use pseudo-classes interativas e adapte telas com media queries.',
+                            lessons: [
+                                {
+                                    id: 'les-2-3-1',
+                                    title: '1. Introdução ao CSS Grid Layout',
+                                    objectives: ['Criar grades bidimensionais com display: grid.', 'Definir colunas com grid-template-columns e fr (fração).'],
+                                    theory: `
+                                        <p class="mb-4">O <strong>CSS Grid</strong> é o sistema de layout mais poderoso para a web, permitindo organizar elementos em linhas e colunas simultaneamente.</p>
+                                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl code-font text-sm overflow-x-auto mb-4"><code>.grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}</code></pre>
+                                    `,
+                                    codeExample: '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">\n    <div style="background: #3b82f6; color: white; padding: 15px; text-align:center; border-radius:6px;">1</div>\n    <div style="background: #3b82f6; color: white; padding: 15px; text-align:center; border-radius:6px;">2</div>\n    <div style="background: #3b82f6; color: white; padding: 15px; text-align:center; border-radius:6px;">3</div>\n</div>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-2-3-1',
+                                            question: 'Qual unidade de medida em CSS Grid representa uma fração do espaço livre disponível no container?',
+                                            options: ['px', '%', 'fr', 'em'],
+                                            correct: 2,
+                                            hint: 'Fração.',
+                                            explanation: 'fr significa fração (fraction), ideal para distribuir proporções no Grid.'
+                                        },
+                                        {
+                                            id: 'ex-2-3-2',
+                                            question: 'Como você define uma grade com 3 colunas de tamanhos iguais rapidamente?',
+                                            options: ['grid-columns: 3;', 'grid-template-columns: repeat(3, 1fr);', 'grid-layout: 3-cols;', 'columns: 1fr 1fr 1fr;'],
+                                            correct: 1,
+                                            hint: 'Usa a função repeat.',
+                                            explanation: 'repeat(3, 1fr) cria 3 colunas com 1 fração de largura cada.'
+                                        }
+                                    ],
+                                    review: 'CSS Grid oferece controle bidimensional usando display: grid e grid-template-columns.'
+                                },
+                                {
+                                    id: 'les-2-3-2',
+                                    title: '2. Pseudo-classes (:hover, :focus, :nth-child)',
+                                    objectives: ['Aplicar estilos dinâmicos com :hover e :focus.', 'Selecionar itens específicos com :nth-child.'],
+                                    theory: `
+                                        <p class="mb-4">As <strong>pseudo-classes</strong> aplicam estilos baseados no estado do elemento (como quando o mouse passa por cima ou um input é selecionado).</p>
+                                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl code-font text-sm overflow-x-auto mb-4"><code>button:hover {
+    background-color: #4338ca;
+    transform: translateY(-2px);
+}</code></pre>
+                                    `,
+                                    codeExample: '<style>\n    .botao-interativo {\n        background: #6366f1;\n        color: white;\n        padding: 10px 20px;\n        border: none;\n        border-radius: 8px;\n        cursor: pointer;\n        transition: background 0.3s;\n    }\n    .botao-interativo:hover {\n        background: #4338ca;\n    }\n</style>\n<button class="botao-interativo">Passe o mouse aqui</button>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-2-3-3',
+                                            question: 'Qual pseudo-classe é acionada quando o usuário passa o cursor do mouse sobre um elemento?',
+                                            options: [':active', ':hover', ':focus', ':mouse'],
+                                            correct: 1,
+                                            hint: 'Flutuar / Passar por cima.',
+                                            explanation: ':hover estiliza o elemento quando o cursor do mouse está sobre ele.'
+                                        },
+                                        {
+                                            id: 'ex-2-3-4',
+                                            question: 'Para que serve a pseudo-classe :nth-child(n)?',
+                                            options: ['Para selecionar o último elemento', 'Para selecionar filhos com base na sua posição numérica', 'Para animar elementos', 'Para verificar se o link foi visitado'],
+                                            correct: 1,
+                                            hint: 'Filho número n.',
+                                            explanation: ':nth-child seleciona elementos com base na sua ordem ordinal entre os irmãos.'
+                                        }
+                                    ],
+                                    review: 'Pseudo-classes como :hover e :focus dão interatividade fantástica aos elementos sem JavaScript.'
+                                },
+                                {
+                                    id: 'les-2-3-3',
+                                    title: '3. Media Queries e Layouts Responsivos',
+                                    objectives: ['Compreender o conceito de <strong>Mobile First</strong>.', 'Escrever regras responsivas com @media (min-width).'],
+                                    theory: `
+                                        <p class="mb-4">As <strong>Media Queries</strong> permitem alterar o estilo da página com base no tamanho da tela do dispositivo (celular, tablet ou desktop).</p>
+                                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl code-font text-sm overflow-x-auto mb-4"><code>@media (min-width: 768px) {
+    .container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}</code></pre>
+                                    `,
+                                    codeExample: '<div style="background: #e0e7ff; padding: 15px; border-radius: 8px; text-align: center;">\n    <p>Redimensione a janela do seu navegador para testar a adaptabilidade responsiva.</p>\n</div>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-2-3-5',
+                                            question: 'Qual regra CSS é utilizada para aplicar estilos apenas quando a tela atingir uma largura mínima específica?',
+                                            options: ['@screen', '@media', '@responsive', '@breakpoint'],
+                                            correct: 1,
+                                            hint: 'Consulta de mídia.',
+                                            explanation: '@media (min-width: ...) aplica estilos condicionalmente conforme a largura da tela.'
+                                        },
+                                        {
+                                            id: 'ex-2-3-6',
+                                            question: 'O que significa a abordagem "Mobile First" no design web?',
+                                            options: ['Criar o site primeiro para computadores potentes', 'Desenvolver o layout pensando primeiro nos celulares e depois expandir para telas maiores', 'Usar apenas imagens em formato mobile', 'Ignorar usuários de desktop'],
+                                            correct: 1,
+                                            hint: 'Celular primeiro.',
+                                            explanation: 'Mobile First prioriza a experiência e o código para dispositivos móveis, adaptando para desktops depois.'
+                                        }
+                                    ],
+                                    review: 'Media queries ajustam o layout para celulares, tablets e computadores de forma fluida.'
+                                }
+                            ]
+                        }
+                    ],
+                    capstone: {
+                        title: 'Projeto Prático Nível 2: Landing Page Responsiva',
+                        description: 'Crie uma página de vendas (Landing Page) moderna e responsiva utilizando Flexbox para o cabeçalho e menu, e CSS Grid para os cards de produtos, com efeitos :hover e adaptação para dispositivos móveis.',
+                        initialHtml: '<header>\n    <h2>TechStore</h2>\n    <nav>\n        <a href="#">Produtos</a>\n        <a href="#">Sobre</a>\n        <a href="#">Contato</a>\n    </nav>\n</header>\n<main>\n    <section class="hero">\n        <h1>Inove sua Experiência Digital</h1>\n        <p>Descubra os melhores gadgets e ferramentas para sua produtividade.</p>\n        <button>Comprar Agora</button>\n    </section>\n    <div class="cards-grid">\n        <div class="card"><h3>Produto A</h3><p>R$ 99,00</p></div>\n        <div class="card"><h3>Produto B</h3><p>R$ 149,00</p></div>\n        <div class="card"><h3>Produto C</h3><p>R$ 199,00</p></div>\n    </div>\n</main>',
+                        initialCss: 'body { font-family: sans-serif; margin: 0; background: #f8fafc; color: #1e293b; }\nheader { display: flex; justify-content: space-between; align-items: center; background: white; padding: 20px 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }\nnav { display: flex; gap: 20px; }\nnav a { text-decoration: none; color: #64748b; font-weight: 500; }\nnav a:hover { color: #4f46e5; }\n.hero { text-align: center; padding: 60px 20px; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; }\n.hero button { background: white; color: #4f46e5; border: none; padding: 12px 24px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 20px; }\n.cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; padding: 40px; max-width: 1000px; margin: 0 auto; }\n.card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; transition: transform 0.2s; }\n.card:hover { transform: translateY(-5px); }'
+                    }
+                },
+                {
+                    id: 'avancado',
+                    title: 'Nível Avançado',
+                    subtitle: 'Cascata profunda, Variáveis CSS, Animações e Arquitetura de Código.',
+                    description: 'Domine a especificidade da cascata, variáveis CSS personalizadas, transições, animações com keyframes, transformações e práticas avançadas de manutenção.',
+                    icon: 'fa-wand-magic-sparkles',
+                    color: 'purple',
+                    modules: [
+                        {
+                            id: 'mod-3-1',
+                            title: 'Módulo 1: Arquitetura CSS e Variáveis',
+                            description: 'Entenda a especificidade profunda e organize projetos com variáveis personalizadas (Custom Properties).',
+                            lessons: [
+                                {
+                                    id: 'les-3-1-1',
+                                    title: '1. Cascata, Especificidade e Herança',
+                                    objectives: ['Calcular pesos de especificidade (IDs, Classes, Tags).', 'Compreender como a cascata resolve conflitos de estilo.'],
+                                    theory: `
+                                        <p class="mb-4">O "C" em CSS significa <strong>Cascading</strong> (Cascata). Quando múltiplas regras competem pelo mesmo elemento, o navegador calcula a <strong>especificidade</strong>:</p>
+                                        <ul class="list-disc pl-5 space-y-2 mb-4 text-slate-700">
+                                            <li><strong>IDs (<code>#id</code>)</strong>: Peso máximo.</li>
+                                            <li><strong>Classes, atributos e pseudo-classes (<code>.class</code>)</strong>: Peso médio.</li>
+                                            <li><strong>Tags e pseudo-elementos (<code>p, div</code>)</strong>: Peso leve.</li>
+                                        </ul>
+                                    `,
+                                    codeExample: '<style>\n    p { color: slate; } /* Peso: 001 */\n    .texto-destaque { color: blue; } /* Peso: 010 */\n    #unico { color: #4f46e5; } /* Peso: 100 (Vence) */\n</style>\n<p id="unico" class="texto-destaque">Este texto terá a cor definida pelo ID.</p>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-3-1-1',
+                                            question: 'Qual seletor tem maior especificidade e ganha em caso de conflito de regras CSS?',
+                                            options: ['Seletor de tag (ex: h1)', 'Seletor de classe (ex: .btn)', 'Seletor de ID (ex: #menu)', 'Seletor universal (*)'],
+                                            correct: 2,
+                                            hint: 'Identificador único.',
+                                            explanation: 'IDs possuem o maior peso de especificidade entre seletores comuns.'
+                                        },
+                                        {
+                                            id: 'ex-3-1-2',
+                                            question: 'O que significa a palavra "Cascata" no CSS?',
+                                            options: ['Efeito de queda d\'água nas animações', 'A ordem e o algoritmo que o navegador usa para decidir qual regra aplicar quando há conflitos', 'Uma biblioteca externa de estilos', 'Um erro comum de compilação'],
+                                            correct: 1,
+                                            hint: 'Como regras se sobrepõem.',
+                                            explanation: 'Cascata é o mecanismo que resolve conflitos de regras com base em origem, especificidade e ordem.'
+                                        }
+                                    ],
+                                    review: 'A especificidade determina quais regras prevalecem: IDs > Classes > Tags.'
+                                },
+                                {
+                                    id: 'les-3-1-2',
+                                    title: '2. Variáveis CSS (Custom Properties)',
+                                    objectives: ['Criar e usar variáveis CSS com a sintaxe --nome.', 'Facilitar a manutenção de temas e cores globais.'],
+                                    theory: `
+                                        <p class="mb-4">As variáveis CSS permitem armazenar valores reutilizáveis (como cores e fontes) em um local central.</p>
+                                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl code-font text-sm overflow-x-auto mb-4"><code>:root {
+    --cor-principal: #4f46e5;
+    --espacamento: 16px;
+}
+.botao {
+    background-color: var(--cor-principal);
+    padding: var(--espacamento);
+}</code></pre>
+                                    `,
+                                    codeExample: '<style>\n    :root {\n        --tema-cor: #10b981;\n    }\n    .caixa-var {\n        background-color: var(--tema-cor);\n        color: white;\n        padding: 20px;\n        border-radius: 8px;\n        text-align: center;\n    }\n</style>\n<div class="caixa-var">\n    <h3>Usando Variáveis CSS</h3>\n    <p>Fácil de alterar em todo o projeto!</p>\n</div>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-3-1-3',
+                                            question: 'Qual pseudo-classe ou seletor raiz é comumente usado para declarar variáveis globais em CSS?',
+                                            options: [':global', ':root', ':document', ':main'],
+                                            correct: 1,
+                                            hint: 'Raiz do documento.',
+                                            explanation: ':root representa o elemento raiz do documento (geralmente <html>), ideal para variáveis globais.'
+                                        },
+                                        {
+                                            id: 'ex-3-1-4',
+                                            question: 'Qual função é utilizada para chamar/recuperar o valor de uma variável em CSS?',
+                                            options: ['get()', 'var()', 'css-value()', 'fetch()'],
+                                            correct: 1,
+                                            hint: 'Abreviação de variável.',
+                                            explanation: 'A função var(--nome-da-variavel) resgata o valor armazenado.'
+                                        }
+                                    ],
+                                    review: 'Variáveis CSS (--variavel) e var() trazem dinamismo e facilidade de manutenção para folhas de estilo.'
+                                },
+                                {
+                                    id: 'les-3-1-3',
+                                    title: '3. Organização e Metodologias de Código (BEM)',
+                                    objectives: ['Conhecer a metodologia BEM (Block, Element, Modifier).', 'Manter o código limpo e escalável.'],
+                                    theory: `
+                                        <p class="mb-4">Em grandes projetos, organizar nomes de classes evita conflitos. A metodologia <strong>BEM</strong> (Block, Element, Modifier) é padrão de mercado:</p>
+                                        <ul class="list-disc pl-5 space-y-2 mb-4 text-slate-700">
+                                            <li><strong>Bloco</strong>: Componente principal (ex: <code>.card</code>)</li>
+                                            <li><strong>Elemento</strong>: Parte do bloco (ex: <code>.card__title</code>)</li>
+                                            <li><strong>Modificador</strong>: Variação (ex: <code>.card--featured</code>)</li>
+                                        </ul>
+                                    `,
+                                    codeExample: '<style>\n    .btn-bem { padding: 10px 20px; border-radius: 6px; border: none; font-weight: bold; }\n    .btn-bem--primary { background: #4f46e5; color: white; }\n    .btn-bem--success { background: #10b981; color: white; }\n</style>\n<button class="btn-bem btn-bem--primary">Salvar</button>\n<button class="btn-bem btn-bem--success">Concluir</button>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-3-1-5',
+                                            question: 'Na metodologia BEM, o que representa o duplo undescore (__)?',
+                                            options: ['O Bloco principal', 'Um Elemento que pertence ao bloco', 'Um Modificador de estado', 'Um erro de sintaxe'],
+                                            correct: 1,
+                                            hint: 'Separa o bloco do seu elemento interno.',
+                                            explanation: 'O duplo sublinhado separa o Bloco do seu Elemento (ex: .menu__item).'
+                                        },
+                                        {
+                                            id: 'ex-3-1-6',
+                                            question: 'Qual é o principal objetivo de metodologias como BEM em CSS?',
+                                            options: ['Fazer o código rodar mais rápido no processador', 'Evitar conflitos de nomes de classes e manter o código escalável', 'Substituir o HTML por JavaScript', 'Compactar imagens automaticamente'],
+                                            correct: 1,
+                                            hint: 'Organização e padronização.',
+                                            explanation: 'BEM padroniza nomes de classes para facilitar a manutenção de aplicações grandes.'
+                                        }
+                                    ],
+                                    review: 'BEM (Block__Element--Modifier) organiza e escala o código CSS de forma profissional.'
+                                }
+                            ]
+                        },
+                        {
+                            id: 'mod-3-2',
+                            title: 'Módulo 2: Animações, Transições e Efeitos Visuais',
+                            description: 'Dê vida aos seus projetos com transições suaves, animações complexas via keyframes e transformações 2D/3D.',
+                            lessons: [
+                                {
+                                    id: 'les-3-2-1',
+                                    title: '1. Transições CSS Suaves',
+                                    objectives: ['Criar efeitos fluidos com transition.', 'Controlar duração e curva de aceleração (ease).'],
+                                    theory: `
+                                        <p class="mb-4">A propriedade <code>transition</code> permite que mudanças de estado (como passar o mouse) ocorram de forma suave e animada em vez de instantânea.</p>
+                                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl code-font text-sm overflow-x-auto mb-4"><code>.card {
+    transition: all 0.3s ease-in-out;
+}</code></pre>
+                                    `,
+                                    codeExample: '<style>\n    .caixa-transicao {\n        background: #6366f1;\n        color: white;\n        padding: 20px;\n        border-radius: 8px;\n        text-align: center;\n        transition: transform 0.4s ease, background 0.4s ease;\n        cursor: pointer;\n    }\n    .caixa-transicao:hover {\n        background: #10b981;\n        transform: scale(1.05);\n    }\n</style>\n<div class="caixa-transicao">\n    Passe o mouse para ver a transição suave\n</div>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-3-2-1',
+                                            question: 'Qual propriedade CSS define o tempo de duração de uma transição visual?',
+                                            options: ['transition-speed', 'transition-duration', 'animation-time', 'speed-effect'],
+                                            correct: 1,
+                                            hint: 'Duração da transição.',
+                                            explanation: 'transition-duration (ou o atalho transition) define quanto tempo a transição leva.'
+                                        },
+                                        {
+                                            id: 'ex-3-2-2',
+                                            question: 'O que a função <code>scale(1.1)</code> dentro de transform faz?',
+                                            options: ['Gira o elemento em 1.1 graus', 'Aumenta o tamanho do elemento em 10%', 'Muda a opacidade para 1.1', 'Desloca o elemento 1.1 pixels para baixo'],
+                                            correct: 1,
+                                            hint: 'Escala / Zoom.',
+                                            explanation: 'scale(1.1) amplia o elemento para 110% do seu tamanho original.'
+                                        }
+                                    ],
+                                    review: 'Transições (transition) criam efeitos fluidos em mudanças de propriedades como hover e focus.'
+                                },
+                                {
+                                    id: 'les-3-2-2',
+                                    title: '2. Animações com Keyframes',
+                                    objectives: ['Criar animações personalizadas com @keyframes.', 'Controlar repetição e estados iniciais/finais.'],
+                                    theory: `
+                                        <p class="mb-4">Enquanto transições precisam de um gatilho de estado (como hover), as <strong>animações @keyframes</strong> rodam automaticamente e controlam cada etapa do movimento.</p>
+                                        <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl code-font text-sm overflow-x-auto mb-4"><code>@keyframes pulsar {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+.elemento {
+    animation: pulsar 2s infinite;
+}</code></pre>
+                                    `,
+                                    codeExample: '<style>\n    @keyframes girar {\n        from { transform: rotate(0deg); }\n        to { transform: rotate(360deg); }\n    }\n    .loader-animado {\n        width: 40px;\n        height: 40px;\n        border: 4px solid #e0e7ff;\n        border-top: 4px solid #6366f1;\n        border-radius: 50%;\n        animation: girar 1s linear infinite;\n        margin: 20px auto;\n    }\n</style>\n<div class="loader-animado"></div>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-3-2-3',
+                                            question: 'Qual regra CSS é utilizada para definir os quadros de uma animação personalizada passo a passo?',
+                                            options: ['@animation-steps', '@keyframes', '@anim-frames', '@timeline'],
+                                            correct: 1,
+                                            hint: 'Quadros-chave.',
+                                            explanation: '@keyframes define os estados (de 0% a 100% ou from/to) de uma animação.'
+                                        },
+                                        {
+                                            id: 'ex-3-2-4',
+                                            question: 'Qual valor na propriedade animation faz com que a animação se repita continuamente sem parar?',
+                                            options: ['loop', 'repeat-forever', 'infinite', 'always'],
+                                            correct: 2,
+                                            hint: 'Infinito.',
+                                            explanation: 'O valor infinite faz com que a animação rode em loop eterno.'
+                                        }
+                                    ],
+                                    review: '@keyframes e animation criam animações automáticas e sofisticadas na interface.'
+                                },
+                                {
+                                    id: 'les-3-2-3',
+                                    title: '3. Transformações 2D e 3D',
+                                    objectives: ['Utilizar translate, rotate e skew.', 'Criar profundidade visual com perspectiva.'],
+                                    theory: `
+                                        <p class="mb-4">A propriedade <code>transform</code> permite mover, girar, distorcer e redimensionar elementos no espaço 2D e 3D.</p>
+                                        <ul class="list-disc pl-5 space-y-2 mb-4 text-slate-700">
+                                            <li><code>translate(x, y)</code>: Move o elemento.</li>
+                                            <li><code>rotate(deg)</code>: Gira o elemento em graus.</li>
+                                        </ul>
+                                    `,
+                                    codeExample: '<style>\n    .card-3d {\n        background: linear-gradient(135deg, #4f46e5, #9333ea);\n        color: white;\n        padding: 30px;\n        border-radius: 12px;\n        text-align: center;\n        transform: perspective(500px) rotateX(10deg);\n        box-shadow: 0 15px 30px rgba(0,0,0,0.2);\n    }\n</style>\n<div class="card-3d">\n    <h3>Efeito de Perspectiva 3D</h3>\n    <p>Elemento transformado com profundidade.</p>\n</div>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-3-2-5',
+                                            question: 'Qual função de transformação é usada para girar um elemento em graus?',
+                                            options: ['turn()', 'spin()', 'rotate()', 'angle()'],
+                                            correct: 2,
+                                            hint: 'Rotação.',
+                                            explanation: 'rotate(45deg) gira o elemento no ângulo especificado.'
+                                        },
+                                        {
+                                            id: 'ex-3-2-6',
+                                            question: 'Como você desloca um elemento 20 pixels para a direita usando transform?',
+                                            options: ['translate(20px, 0)', 'move(20px, 0)', 'shift(20px)', 'offset(20px)'],
+                                            correct: 0,
+                                            hint: 'Translação.',
+                                            explanation: 'translate(x, y) move o elemento ao longo dos eixos horizontal e vertical.'
+                                        }
+                                    ],
+                                    review: 'Transforms (rotate, translate, scale) combinados com perspectiva criam interfaces modernas e imersivas.'
+                                }
+                            ]
+                        },
+                        {
+                            id: 'mod-3-3',
+                            title: 'Módulo 3: Projetos Complexos, Performance e Acessibilidade',
+                            description: 'Otimize performance, garanta acessibilidade WCAG rigorosa e gerencie códigos de grande escala.',
+                            lessons: [
+                                {
+                                    id: 'les-3-3-1',
+                                    title: '1. Otimização de Performance e Assets',
+                                    objectives: ['Otimizar carregamento de estilos.', 'Minimizar impacto de animações pesadas na CPU.'],
+                                    theory: `
+                                        <p class="mb-4">Sites profissionais precisam carregar instantaneamente. No CSS, evite seletores excessivamente complexos e prefira animar propriedades leves como <code>transform</code> e <code>opacity</code> em vez de <code>width</code> ou <code>top</code>.</p>
+                                    `,
+                                    codeExample: '<div style="background:#f1f5f9; padding:20px; border-radius:8px;">\n    <h4>Dica de Performance</h4>\n    <p>Utilize <strong>will-change: transform</strong> em animações complexas para otimizar a renderização de hardware via GPU.</p>\n</div>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-3-3-1',
+                                            question: 'Quais propriedades CSS são mais recomendadas para animações suaves por causarem menor impacto na performance (GPU)?',
+                                            options: ['width e height', 'top e left', 'transform e opacity', 'margin e padding'],
+                                            correct: 2,
+                                            hint: 'Transformação e opacidade.',
+                                            explanation: 'transform e opacity são tratadas pela GPU, garantindo fluidez sem travar a página.'
+                                        },
+                                        {
+                                            id: 'ex-3-3-2',
+                                            question: 'Por que seletores CSS muito longos e aninhados em excesso (ex: div div p span a) prejudicam a performance?',
+                                            options: ['Porque o navegador gasta mais tempo calculando a árvore de correspondência', 'Porque o arquivo fica pesado em bytes', 'Porque o monitor esquenta', 'Porque o JavaScript deixa de funcionar'],
+                                            correct: 0,
+                                            hint: 'Cálculo do motor do navegador.',
+                                            explanation: 'Seletores hiper-aninhados exigem mais do motor do navegador ao calcular estilos (CSS matching).'
+                                        }
+                                    ],
+                                    review: 'Boas práticas de performance garantem sites rápidos, leves e eficientes para todos os usuários.'
+                                },
+                                {
+                                    id: 'les-3-3-2',
+                                    title: '2. Acessibilidade Avançada (WCAG e Leitores de Tela)',
+                                    objectives: ['Implementar padrões WCAG de contraste.', 'Garantir foco visível acessível por teclado.'],
+                                    theory: `
+                                        <p class="mb-4">A acessibilidade (a11y) é um requisito legal e ético na web moderna. Elementos interativos nunca devem remover o outline de foco sem fornecer uma alternativa visual clara.</p>
+                                    `,
+                                    codeExample: '<style>\n    .botao-acessivel:focus-visible {\n        outline: 3px solid #6366f1;\n        outline-offset: 2px;\n    }\n</style>\n<button class="botao-acessivel" style="padding:10px 20px; background:#1e293b; color:white; border:none; border-radius:6px; cursor:pointer;">Botão com Foco Acessível</button>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-3-3-3',
+                                            question: 'Qual pseudo-classe garante que o contorno de foco apareça apenas quando o usuário navega via teclado?',
+                                            options: [':focus', ':focus-visible', ':keyboard-focus', ':active-tab'],
+                                            correct: 1,
+                                            hint: 'Foco visível.',
+                                            explanation: ':focus-visible exibe o anel de foco inteligente quando navegado por teclado.'
+                                        },
+                                        {
+                                            id: 'ex-3-3-4',
+                                            question: 'Qual é a proporção mínima de contraste recomendada pelo padrão WCAG AA para textos normais?',
+                                            options: ['2:1', '3:1', '4.5:1', '10:1'],
+                                            correct: 2,
+                                            hint: 'Quatro ponto cinco para um.',
+                                            explanation: 'O padrão WCAG AA exige taxa de contraste mínima de 4.5:1 para legibilidade de texto normal.'
+                                        }
+                                    ],
+                                    review: 'WCAG, contraste adequado e foco visível garantem inclusão digital para todos.'
+                                },
+                                {
+                                    id: 'les-3-3-3',
+                                    title: '3. Manutenção e Escalabilidade de Grandes Projetos',
+                                    objectives: ['Estruturar folhas de estilo modulares.', 'Manter código limpo, documentado e sustentável a longo prazo.'],
+                                    theory: `
+                                        <p class="mb-4">Em projetos corporativos com dezenas de desenvolvedores, manter o CSS organizado exige divisão em arquivos modulares (como variáveis, componentes, layouts e utilitários) e comentários claros.</p>
+                                    `,
+                                    codeExample: '<div style="background:#e0e7ff; padding:20px; border-radius:8px;">\n    <h4>Arquitetura Modular</h4>\n    <p>Dividir o CSS em blocos lógicos impede que regras colidam e facilita a manutenção contínua do sistema.</p>\n</div>',
+                                    exercises: [
+                                        {
+                                            id: 'ex-3-3-5',
+                                            question: 'Qual é a melhor prática para comentar código em CSS?',
+                                            options: ['// Comentário', '/* Comentário */', '<!-- Comentário -->', '# Comentário'],
+                                            correct: 1,
+                                            hint: 'Barra asterisco.',
+                                            explanation: 'Em CSS, comentários válidos são escritos entre /* e */.'
+                                        },
+                                        {
+                                            id: 'ex-3-3-6',
+                                            question: 'O que caracteriza um código CSS escalável e de fácil manutenção?',
+                                            options: ['Uso excessivo de !important em todas as regras', 'Divisão modular por componentes e variáveis bem definidas', 'Escrever todo o estilo em uma única linha', 'Evitar uso de classes'],
+                                            correct: 1,
+                                            hint: 'Modularidade.',
+                                            explanation: 'Modularidade e variáveis estruturadas permitem que o sistema cresça sem caos.'
+                                        }
+                                    ],
+                                    review: 'Organização modular, comentários claros e padronização garantem escalabilidade em grandes equipes.'
+                                }
+                            ]
+                        }
+                    ],
+                    capstone: {
+                        title: 'Projeto Prático Nível 3: Dashboard Completo e Animado',
+                        description: 'Construa um Dashboard profissional completo, utilizando CSS Grid avançado, variáveis CSS de tema, animações suaves com keyframes, transições interativas e total acessibilidade WCAG.',
+                        initialHtml: '<div class="dashboard">\n    <aside class="sidebar">\n        <h2>Painel</h2>\n        <nav>\n            <a href="#" class="active">Visão Geral</a>\n            <a href="#">Estatísticas</a>\n            <a href="#">Configurações</a>\n        </nav>\n    </aside>\n    <main class="content">\n        <header class="topbar">\n            <h1>Bem-vindo de volta, Dev!</h1>\n            <div class="user-badge">Admin</div>\n        </header>\n        <section class="stats-grid">\n            <div class="stat-card"><h3>Usuários</h3><p class="number">1,240</p></div>\n            <div class="stat-card"><h3>Receita</h3><p class="number">R$ 45k</p></div>\n            <div class="stat-card"><h3>Projetos</h3><p class="number">12</p></div>\n        </section>\n    </main>\n</div>',
+                        initialCss: ':root { --bg-color: #f1f5f9; --card-bg: #ffffff; --primary: #6366f1; --text: #1e293b; }\nbody { font-family: sans-serif; margin: 0; background: var(--bg-color); color: var(--text); }\n.dashboard { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }\n.sidebar { background: #1e293b; color: white; padding: 30px 20px; display: flex; flex-direction: column; gap: 30px; }\n.sidebar nav { display: flex; flex-direction: column; gap: 10px; }\n.sidebar a { color: #94a3b8; text-decoration: none; padding: 10px 15px; border-radius: 6px; transition: all 0.3s ease; }\n.sidebar a:hover, .sidebar a.active { background: var(--primary); color: white; transform: translateX(5px); }\n.content { padding: 40px; display: flex; flex-direction: column; gap: 30px; }\n.topbar { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 20px 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }\n.user-badge { background: #e0e7ff; color: var(--primary); padding: 6px 14px; border-radius: 20px; font-weight: bold; }\n.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }\n.stat-card { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeIn 0.5s ease-out; }\n.stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.1); }\n.stat-card .number { font-size: 28px; font-weight: bold; color: var(--primary); margin-top: 10px; }\n@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }'
+                    }
+                }
+            ]
+        };
+
+        // Application State Management
+        const app = {
+            state: {
+                currentView: 'home', // 'home', 'curriculum', 'lesson', 'project'
+                currentLevelId: null,
+                currentModuleId: null,
+                currentLessonId: null,
+                progress: {} // { 'les-1-1-1': true, ... }
+            },
+
+            init() {
+                this.loadProgress();
+                this.render();
+            },
+
+            loadProgress() {
+                const saved = localStorage.getItem('devacademy_progress');
+                if (saved) {
+                    try {
+                        this.state.progress = JSON.parse(saved);
+                    } catch (e) {
+                        this.state.progress = {};
+                    }
+                }
+            },
+
+            saveProgress() {
+                localStorage.setItem('devacademy_progress', JSON.stringify(this.state.progress));
+            },
+
+            calculateGlobalProgress() {
+                let totalLessons = 0;
+                let completedLessons = 0;
+                courseData.levels.forEach(level => {
+                    level.modules.forEach(mod => {
+                        mod.lessons.forEach(les => {
+                            totalLessons++;
+                            if (this.state.progress[les.id]) {
+                                completedLessons++;
+                            }
+                        });
+                    });
+                });
+                if (totalLessons === 0) return 0;
+                return Math.round((completedLessons / totalLessons) * 100);
+            },
+
+            navigateToHome() {
+                this.state.currentView = 'home';
+                this.state.currentLevelId = null;
+                this.state.currentModuleId = null;
+                this.state.currentLessonId = null;
+                this.render();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+
+            navigateToLevel(levelId) {
+                this.state.currentView = 'curriculum';
+                this.state.currentLevelId = levelId;
+                this.render();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+
+            navigateToLesson(levelId, moduleId, lessonId) {
+                this.state.currentView = 'lesson';
+                this.state.currentLevelId = levelId;
+                this.state.currentModuleId = moduleId;
+                this.state.currentLessonId = lessonId;
+                this.render();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                setTimeout(() => {
+                    this.updateSandboxPreview();
+                }, 50);
+            },
+
+            navigateToProject(levelId) {
+                this.state.currentView = 'project';
+                this.state.currentLevelId = levelId;
+                this.render();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                setTimeout(() => {
+                    this.updateProjectPreview();
+                }, 50);
+            },
+
+            toggleLessonCompletion(lessonId) {
+                this.state.progress[lessonId] = !this.state.progress[lessonId];
+                this.saveProgress();
+                this.render();
+            },
+
+            resetProgress() {
+                this.state.progress = {};
+                this.saveProgress();
+                this.render();
+                this.showModal('Progresso Reiniciado', 'Todo o seu progresso no curso foi reiniciado com sucesso.', 'fa-rotate-right', 'text-amber-600', 'bg-amber-100');
+            },
+
+            showModal(title, message, iconClass = 'fa-check', iconColor = 'text-emerald-600', iconBg = 'bg-emerald-100') {
+                const modal = document.getElementById('custom-modal');
+                const modalTitle = document.getElementById('modal-title');
+                const modalMessage = document.getElementById('modal-message');
+                const modalIcon = document.getElementById('modal-icon');
+
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                modalIcon.className = `w-12 h-12 rounded-full ${iconBg} ${iconColor} flex items-center justify-center text-xl mb-4 mx-auto`;
+                modalIcon.innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
+
+                modal.classList.remove('hidden');
+            },
+
+            closeModal() {
+                document.getElementById('custom-modal').classList.add('hidden');
+            },
+
+            render() {
+                // Update global progress indicator in header
+                document.getElementById('global-progress').textContent = this.calculateGlobalProgress();
+
+                const container = document.getElementById('main-container');
+                
+                if (this.state.currentView === 'home') {
+                    container.innerHTML = this.renderHomeView();
+                } else if (this.state.currentView === 'curriculum') {
+                    container.innerHTML = this.renderCurriculumView();
+                } else if (this.state.currentView === 'lesson') {
+                    container.innerHTML = this.renderLessonView();
+                } else if (this.state.currentView === 'project') {
+                    container.innerHTML = this.renderProjectView();
+                }
+            },
+
+            renderHomeView() {
+                const levelsHtml = courseData.levels.map(level => {
+                    let totalL = 0;
+                    let compL = 0;
+                    level.modules.forEach(m => m.lessons.forEach(l => {
+                        totalL++;
+                        if (this.state.progress[l.id]) compL++;
+                    }));
+                    const pct = totalL > 0 ? Math.round((compL / totalL) * 100) : 0;
+
+                    const borderColors = { emerald: 'border-emerald-200 hover:border-emerald-400', indigo: 'border-indigo-200 hover:border-indigo-400', purple: 'border-purple-200 hover:border-purple-400' };
+                    const bgBadge = { emerald: 'bg-emerald-100 text-emerald-700', indigo: 'bg-indigo-100 text-indigo-700', purple: 'bg-purple-100 text-purple-700' };
+                    const btnColors = { emerald: 'bg-emerald-600 hover:bg-emerald-700', indigo: 'bg-indigo-600 hover:bg-indigo-700', purple: 'bg-purple-600 hover:bg-purple-700' };
+
+                    return `
+                        <div class="bg-white rounded-2xl border ${borderColors[level.color]} shadow-sm hover:shadow-md transition-all p-6 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="w-12 h-12 rounded-xl ${bgBadge[level.color]} flex items-center justify-center text-xl">
+                                        <i class="fa-solid ${level.icon}"></i>
+                                    </div>
+                                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${bgBadge[level.color]}">${pct}% Concluído</span>
+                                </div>
+                                <h3 class="text-xl font-bold text-slate-900 mb-1">${level.title}</h3>
+                                <p class="text-sm font-medium text-slate-600 mb-3">${level.subtitle}</p>
+                                <p class="text-sm text-slate-500 mb-6">${level.description}</p>
+                            </div>
+                            <div>
+                                <div class="w-full bg-slate-100 h-2 rounded-full mb-4 overflow-hidden">
+                                    <div class="bg-brand-600 h-full rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                                </div>
+                                <button onclick="app.navigateToLevel('${level.id}')" class="w-full ${btnColors[level.color]} text-white font-medium py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center space-x-2">
+                                    <span>Acessar Nível</span>
+                                    <i class="fa-solid fa-arrow-right text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="space-y-12">
+                        <!-- Hero Section -->
+                        <div class="bg-gradient-to-r from-brand-700 via-indigo-600 to-violet-600 rounded-3xl p-8 md:p-12 text-white shadow-xl relative overflow-hidden">
+                            <div class="relative z-10 max-w-2xl">
+                                <span class="bg-white/20 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider mb-4 inline-block backdrop-blur-sm">Do Zero ao Profissional</span>
+                                <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">Domine HTML e CSS de Verdade</h1>
+                                <p class="text-indigo-100 text-lg mb-8 leading-relaxed">Aprenda na prática com aulas estruturadas, teoria detalhada, exercícios interativos e projetos completos adaptados para iniciantes e avançados.</p>
+                                <div class="flex flex-wrap gap-4">
+                                    <button onclick="app.navigateToLevel('iniciante')" class="bg-white text-brand-700 font-bold px-6 py-3 rounded-xl shadow hover:bg-indigo-50 transition-colors">
+                                        Começar do Zero
+                                    </button>
+                                    <a href="#niveis-section" class="bg-brand-800/50 hover:bg-brand-800 text-white font-medium px-6 py-3 rounded-xl border border-white/20 backdrop-blur-sm transition-colors flex items-center">
+                                        Ver Currículo Completo
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl">
+                                <i class="fa-brands fa-html5"></i>
+                            </div>
+                        </div>
+
+                        <!-- Levels Grid -->
+                        <div id="niveis-section">
+                            <div class="text-center max-w-2xl mx-auto mb-10">
+                                <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mb-3">Trilha de Aprendizagem Progressiva</h2>
+                                <p class="text-slate-600">Escolha o nível ideal para o seu momento atual ou siga a trilha recomendada passo a passo.</p>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                ${levelsHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            renderCurriculumView() {
+                const level = courseData.levels.find(l => l.id === this.state.currentLevelId);
+                if (!level) return this.navigateToHome();
+
+                let totalL = 0;
+                let compL = 0;
+                level.modules.forEach(m => m.lessons.forEach(l => {
+                    totalL++;
+                    if (this.state.progress[l.id]) compL++;
+                }));
+                const pct = totalL > 0 ? Math.round((compL / totalL) * 100) : 0;
+
+                const modulesHtml = level.modules.map(mod => {
+                    const lessonsHtml = mod.lessons.map(les => {
+                        const isDone = !!this.state.progress[les.id];
+                        return `
+                            <div class="bg-white border border-slate-200 hover:border-brand-300 rounded-xl p-4 flex items-center justify-between transition-all shadow-sm">
+                                <div class="flex items-center space-x-3 cursor-pointer flex-grow" onclick="app.navigateToLesson('${level.id}', '${mod.id}', '${les.id}')">
+                                    <div class="w-8 h-8 rounded-full ${isDone ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'} flex items-center justify-center font-bold text-sm">
+                                        <i class="fa-solid ${isDone ? 'fa-check' : 'fa-book-open'}"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-slate-800 hover:text-brand-600 transition-colors text-base">${les.title}</h4>
+                                        <p class="text-xs text-slate-500">${les.objectives.length} objetivos de aprendizagem</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <button onclick="app.toggleLessonCompletion('${les.id}')" title="Marcar como concluída" class="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${isDone ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                                        ${isDone ? '<i class="fa-solid fa-check mr-1"></i> Concluída' : 'Marcar Concluída'}
+                                    </button>
+                                    <button onclick="app.navigateToLesson('${level.id}', '${mod.id}', '${les.id}')" class="bg-brand-50 text-brand-600 hover:bg-brand-600 hover:text-white p-2 rounded-lg transition-colors">
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 mb-6">
+                            <h3 class="text-lg font-bold text-slate-900 mb-1">${mod.title}</h3>
+                            <p class="text-sm text-slate-600 mb-4">${mod.description}</p>
+                            <div class="space-y-3">
+                                ${lessonsHtml}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="space-y-8">
+                        <!-- Breadcrumb & Header -->
+                        <div>
+                            <button onclick="app.navigateToHome()" class="text-sm text-brand-600 hover:text-brand-700 font-medium mb-4 flex items-center space-x-1">
+                                <i class="fa-solid fa-arrow-left mr-1"></i> Voltar para Início
+                            </button>
+                            <div class="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                                <div>
+                                    <span class="text-xs font-semibold px-3 py-1 rounded-full bg-brand-100 text-brand-700 uppercase tracking-wide mb-2 inline-block">${level.id}</span>
+                                    <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 mb-2">${level.title}</h1>
+                                    <p class="text-slate-600">${level.description}</p>
+                                </div>
+                                <div class="w-full md:w-64 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                    <div class="flex justify-between text-sm font-bold text-slate-700 mb-2">
+                                        <span>Progresso do Nível</span>
+                                        <span>${pct}%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 h-2.5 rounded-full mb-3 overflow-hidden">
+                                        <div class="bg-brand-600 h-full rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                                    </div>
+                                    <button onclick="app.navigateToProject('${level.id}')" class="w-full bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-medium py-2 px-4 rounded-lg text-sm shadow-sm transition-all flex items-center justify-center space-x-2">
+                                        <i class="fa-solid fa-laptop-code"></i>
+                                        <span>Projeto Prático de Conclusão</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modules & Lessons List -->
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900 mb-6">Módulos do Curso</h2>
+                            ${modulesHtml}
+                        </div>
+                    </div>
+                `;
+            },
+
+            renderLessonView() {
+                const level = courseData.levels.find(l => l.id === this.state.currentLevelId);
+                if (!level) return this.navigateToHome();
+                const module = level.modules.find(m => m.id === this.state.currentModuleId);
+                if (!module) return this.navigateToLevel(level.id);
+                const lesson = module.lessons.find(l => l.id === this.state.currentLessonId);
+                if (!lesson) return this.navigateToLevel(level.id);
+
+                const isDone = !!this.state.progress[lesson.id];
+
+                // Objectives list
+                const objectivesHtml = lesson.objectives.map(obj => `
+                    <li class="flex items-start space-x-2 text-slate-700">
+                        <i class="fa-solid fa-circle-check text-brand-600 mt-1"></i>
+                        <span>${escapeHtml(obj)}</span>
+                    </li>
+                `).join('');
+
+                // Exercises rendering with explicit Letter Identifiers (A, B, C, D) and safe escaping
+                const exercisesHtml = lesson.exercises.map((ex, index) => {
+                    const safeQuestion = escapeHtml(ex.question);
+                    const safeHint = escapeHtml(ex.hint || 'Analise atentamente o conteúdo estudado nesta aula.');
+                    const safeExplanation = escapeHtml(ex.explanation || '');
+                    
+                    const optionsHtml = ex.options ? ex.options.map((opt, optIdx) => {
+                        const letter = optionLabels[optIdx] || (optIdx + 1);
+                        const safeOpt = escapeHtml(opt);
+                        return `
+                            <label class="flex items-center space-x-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
+                                <input type="radio" name="ex-${ex.id}" value="${optIdx}" class="text-brand-600 focus:ring-brand-500 h-4 w-4">
+                                <span class="text-slate-800 text-sm font-semibold min-w-[24px] text-center bg-slate-100 rounded-md py-0.5 border border-slate-200">${letter}</span>
+                                <span class="text-slate-700 text-sm font-medium flex-grow">${safeOpt}</span>
+                            </label>
+                        `;
+                    }).join('') : '';
+
+                    const correctIndex = typeof ex.correct === 'number' ? ex.correct : 0;
+                    const correctLetter = optionLabels[correctIndex] || (correctIndex + 1);
+                    const correctText = ex.options && ex.options[correctIndex] ? escapeHtml(ex.options[correctIndex]) : '';
+
+                    return `
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 mb-6">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-full">Exercício ${index + 1}</span>
+                            </div>
+                            <h4 class="font-bold text-slate-900 text-base mb-3">${safeQuestion}</h4>
+                            
+                            ${ex.options ? `<div class="space-y-2 mb-4" id="options-${ex.id}">${optionsHtml}</div>` : ''}
+
+                            <div class="flex flex-wrap gap-3 items-center">
+                                <button onclick="app.checkExercise('${ex.id}', ${correctIndex})" class="bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm py-2 px-4 rounded-xl transition-colors shadow-sm">
+                                    Responder
+                                </button>
+                                <button onclick="app.toggleHint('${ex.id}')" class="text-slate-600 hover:text-brand-600 text-sm font-medium px-3 py-2 rounded-xl border border-slate-200 bg-white hover:border-brand-300 transition-colors">
+                                    <i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i> Dica
+                                </button>
+                                <button onclick="app.toggleSolution('${ex.id}')" class="text-slate-600 hover:text-brand-600 text-sm font-medium px-3 py-2 rounded-xl border border-slate-200 bg-white hover:border-brand-300 transition-colors">
+                                    <i class="fa-solid fa-key text-indigo-500 mr-1"></i> Revelar Solução
+                                </button>
+                            </div>
+
+                            <div id="hint-${ex.id}" class="hidden mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm">
+                                <strong>💡 Dica:</strong> ${safeHint}
+                            </div>
+
+                            <div id="solution-${ex.id}" class="hidden mt-4 p-4 bg-indigo-50 border border-indigo-200 rounded-xl text-indigo-900 text-sm space-y-2">
+                                <div><strong>🔑 Resposta Correta:</strong> Opção ${correctLetter}${correctText ? ') ' + correctText : ''}</div>
+                                <div><strong>📖 Explicação:</strong> ${safeExplanation}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="space-y-8 max-w-4xl mx-auto">
+                        <!-- Navigation Header -->
+                        <div class="flex items-center justify-between">
+                            <button onclick="app.navigateToLevel('${level.id}')" class="text-sm text-brand-600 hover:text-brand-700 font-medium flex items-center space-x-1">
+                                <i class="fa-solid fa-arrow-left mr-1"></i> Voltar aos módulos deste nível
+                            </button>
+                            <span class="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-600 uppercase tracking-wide">${escapeHtml(level.title)}</span>
+                        </div>
+
+                        <!-- Lesson Header & Objectives -->
+                        <div class="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm">
+                            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 mb-4">${escapeHtml(lesson.title)}</h1>
+                            <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 mb-6">
+                                <h3 class="font-bold text-indigo-900 mb-3 flex items-center">
+                                    <i class="fa-solid fa-bullseye mr-2 text-indigo-600"></i> Objetivos de Aprendizagem
+                                </h3>
+                                <ul class="space-y-2">
+                                    ${objectivesHtml}
+                                </ul>
+                            </div>
+
+                            <!-- Theory Content -->
+                            <div class="prose max-w-none text-slate-700 space-y-4 mb-8">
+                                ${lesson.theory}
+                            </div>
+
+                            <!-- Live Code Sandbox (Interactive Editor & Preview) -->
+                            <div class="mb-8 border border-slate-300 rounded-2xl overflow-hidden shadow-sm bg-slate-900">
+                                <div class="bg-slate-800 px-4 py-3 flex items-center justify-between text-slate-200 text-sm font-medium">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fa-solid fa-code text-indigo-400"></i>
+                                        <span>Editor Interativo & Pré-visualização</span>
+                                    </div>
+                                    <span class="text-xs text-slate-400">Edite o código abaixo e veja o resultado em tempo real</span>
+                                </div>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-800">
+                                    <div class="p-4 flex flex-col">
+                                        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Código HTML / CSS Editável</label>
+                                        <textarea id="sandbox-code" class="w-full h-48 bg-slate-950 text-emerald-400 p-3 rounded-xl code-font text-xs resize-y outline-none focus:ring-1 focus:ring-brand-500 custom-scrollbar" oninput="app.updateSandboxPreview()">${escapeHtml(lesson.codeExample)}</textarea>
+                                        <span class="text-xs text-slate-500 mt-2">Dica: Você pode incluir tags &lt;style&gt; diretamente ou testar qualquer trecho.</span>
+                                    </div>
+                                    <div class="p-4 flex flex-col bg-white">
+                                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Pré-visualização Ao Vivo</label>
+                                        <div class="w-full h-48 border border-slate-200 rounded-xl overflow-hidden bg-white">
+                                            <iframe id="sandbox-iframe" class="w-full h-full border-0"></iframe>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Exercises Section -->
+                            <div class="border-t border-slate-200 pt-8 mt-8">
+                                <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center">
+                                    <i class="fa-solid fa-dumbbell mr-2 text-brand-600"></i> Exercícios Práticos da Aula
+                                </h3>
+                                ${exercisesHtml}
+                            </div>
+
+                            <!-- Review Summary Box -->
+                            <div class="mt-8 bg-emerald-50 border border-emerald-200 rounded-2xl p-6">
+                                <h4 class="font-bold text-emerald-900 mb-2 flex items-center">
+                                    <i class="fa-solid fa-clipboard-check mr-2 text-emerald-600"></i> Revisão dos Conceitos Principais
+                                </h4>
+                                <p class="text-emerald-800 text-sm leading-relaxed">${escapeHtml(lesson.review)}</p>
+                            </div>
+
+                            <!-- Mandatory Bottom Lesson Actions -->
+                            <div class="mt-8 pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <button onclick="app.navigateToLevel('${level.id}')" class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-3 px-6 rounded-xl transition-colors shadow-sm flex items-center justify-center space-x-2 border border-slate-300">
+                                    <i class="fa-solid fa-arrow-left text-sm"></i>
+                                    <span>Voltar aos módulos deste nível</span>
+                                </button>
+                                <button onclick="app.toggleLessonCompletion('${lesson.id}')" class="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-sm transition-colors shadow-sm flex items-center justify-center space-x-2 ${isDone ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-brand-600 hover:bg-brand-700 text-white'}">
+                                    <i class="fa-solid ${isDone ? 'fa-check-circle' : 'fa-circle'}"></i>
+                                    <span>${isDone ? 'Aula Concluída' : 'Marcar Concluída'}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            renderProjectView() {
+                const level = courseData.levels.find(l => l.id === this.state.currentLevelId);
+                if (!level || !level.capstone) return this.navigateToHome();
+                const project = level.capstone;
+
+                return `
+                    <div class="space-y-8 max-w-5xl mx-auto">
+                        <button onclick="app.navigateToLevel('${level.id}')" class="text-sm text-brand-600 hover:text-brand-700 font-medium flex items-center space-x-1">
+                            <i class="fa-solid fa-arrow-left mr-1"></i> Voltar para os Módulos do Nível
+                        </button>
+
+                        <div class="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm">
+                            <div class="flex items-center space-x-3 mb-4">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 text-white flex items-center justify-center text-xl shadow-md">
+                                    <i class="fa-solid fa-laptop-code"></i>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-semibold px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 uppercase tracking-wide">Projeto Prático de Conclusão</span>
+                                    <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900">${project.title}</h1>
+                                </div>
+                            </div>
+                            <p class="text-slate-600 mb-8 leading-relaxed">${project.description}</p>
+
+                            <!-- Capstone Dual Editor & Live Preview -->
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                                <div class="flex flex-col space-y-4">
+                                    <div class="bg-slate-900 rounded-2xl overflow-hidden shadow-sm flex flex-col">
+                                        <div class="bg-slate-800 px-4 py-3 text-slate-200 text-sm font-medium flex items-center justify-between">
+                                            <span><i class="fa-brands fa-html5 text-orange-400 mr-2"></i> Editor HTML</span>
+                                        </div>
+                                        <textarea id="project-html" class="w-full h-64 bg-slate-950 text-orange-300 p-4 code-font text-xs resize-y outline-none custom-scrollbar" oninput="app.updateProjectPreview()">${project.initialHtml}</textarea>
+                                    </div>
+                                    <div class="bg-slate-900 rounded-2xl overflow-hidden shadow-sm flex flex-col">
+                                        <div class="bg-slate-800 px-4 py-3 text-slate-200 text-sm font-medium flex items-center justify-between">
+                                            <span><i class="fa-brands fa-css3-alt text-blue-400 mr-2"></i> Editor CSS</span>
+                                        </div>
+                                        <textarea id="project-css" class="w-full h-64 bg-slate-950 text-blue-300 p-4 code-font text-xs resize-y outline-none custom-scrollbar" oninput="app.updateProjectPreview()">${project.initialCss}</textarea>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="bg-white border border-slate-300 rounded-2xl overflow-hidden shadow-sm flex flex-col h-full">
+                                        <div class="bg-slate-100 px-4 py-3 text-slate-700 text-sm font-medium border-b border-slate-200 flex items-center justify-between">
+                                            <span><i class="fa-solid fa-eye text-brand-600 mr-2"></i> Pré-visualização do Projeto</span>
+                                            <span class="text-xs text-slate-500">Resultado em tempo real</span>
+                                        </div>
+                                        <div class="flex-grow min-h-[540px] bg-white">
+                                            <iframe id="project-iframe" class="w-full h-full border-0"></iframe>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end">
+                                <button onclick="app.showModal('Projeto Concluído!', 'Parabéns por testar e estruturar o projeto prático deste nível com sucesso!', 'fa-trophy', 'text-amber-500', 'bg-amber-100')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl shadow transition-colors flex items-center space-x-2">
+                                    <i class="fa-solid fa-check"></i>
+                                    <span>Concluir Projeto e Avançar</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            updateSandboxPreview() {
+                const codeArea = document.getElementById('sandbox-code');
+                const iframe = document.getElementById('sandbox-iframe');
+                if (!codeArea || !iframe) return;
+                
+                const content = codeArea.value;
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                doc.open();
+                doc.write(content);
+                doc.close();
+            },
+
+            updateProjectPreview() {
+                const htmlArea = document.getElementById('project-html');
+                const cssArea = document.getElementById('project-css');
+                const iframe = document.getElementById('project-iframe');
+                if (!htmlArea || !cssArea || !iframe) return;
+
+                const htmlContent = htmlArea.value;
+                const cssContent = cssArea.value;
+
+                const fullDoc = `
+                    <!DOCTYPE html>
+                    <html lang="pt-BR">
+                    <head>
+                        <meta charset="UTF-8">
+                        <style>${cssContent}</style>
+                    </head>
+                    <body>
+                        ${htmlContent}
+                    </body>
+                    </html>
+                `;
+
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                doc.open();
+                doc.write(fullDoc);
+                doc.close();
+            },
+
+            checkExercise(exId, correctIndex) {
+                const optionsContainer = document.getElementById(`options-${exId}`);
+                if (!optionsContainer) return;
+                const selected = optionsContainer.querySelector(`input[name="ex-${exId}"]:checked`);
+                
+                if (!selected) {
+                    this.showModal('Atenção', 'Por favor, selecione uma alternativa antes de responder.', 'fa-circle-exclamation', 'text-amber-600', 'bg-amber-100');
+                    return;
+                }
+
+                const answer = parseInt(selected.value);
+                const letter = optionLabels[answer] || (answer + 1);
+
+                if (answer === correctIndex) {
+                    this.showModal('Resposta Correta!', `Parabéns! A opção (${letter}) está correta.`, 'fa-circle-check', 'text-emerald-600', 'bg-emerald-100');
+                } else {
+                    this.showModal('Incorreto', `Ops! A opção (${letter}) está incorreta. Reveja a explicação ou consulte a dica para tentar novamente.`, 'fa-circle-xmark', 'text-red-600', 'bg-red-100');
+                }
+            },
+
+            toggleHint(exId) {
+                const hintEl = document.getElementById(`hint-${exId}`);
+                if (hintEl) hintEl.classList.toggle('hidden');
+            },
+
+            toggleSolution(exId) {
+                const solEl = document.getElementById(`solution-${exId}`);
+                if (solEl) solEl.classList.toggle('hidden');
+            }
+        };
+
+        // Initialize application on window load
+        window.onload = function() {
+            app.init();
+        };
+    </script>
+</body>
+</html>
